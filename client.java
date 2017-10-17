@@ -39,7 +39,7 @@ public class client {
     	InetAddress ip_addr = InetAddress.getByName(set_host);
     	DatagramSocket udp_sock = new DatagramSocket();
     		
-	    packet new_pack = new packet(0, 0, readtext.length(), readtext);
+	    packet new_pack = new packet(3, 0, readtext.length(), readtext);
 	    
 	    ByteArrayOutputStream out_byte = new ByteArrayOutputStream();
 		ObjectOutputStream obj = new ObjectOutputStream(out_byte);

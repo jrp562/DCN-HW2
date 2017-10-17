@@ -18,15 +18,15 @@ public class server {
         
     	int rand_port, num;
     	String set_host = args[0];
-        String set_port = args[1];
+        String serv_port = args[1];
 		String em_port = args[2];
         String output_file = args[3];
 
-        int set_port_int = Integer.parseInt(set_port);
+        int serv_port_int = Integer.parseInt(serv_port);
+		int em_port_int = Integer.parseInt(em_port);
 		
-		// STAGE TWO: Begin UDP
 		File out_file = new File(output_file);
-		DatagramSocket udp_sock = new DatagramSocket(set_port_int);
+		DatagramSocket udp_sock = new DatagramSocket(serv_port_int);
 		byte[] in_buf = new byte[1024];
 		DatagramPacket udp_in = new DatagramPacket(in_buf, in_buf.length);
 		udp_sock.receive(udp_in);
