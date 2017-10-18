@@ -1,22 +1,17 @@
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.ObjectInputStream;
-import java.io.PrintStream;
+import java.io.ObjectOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.Scanner;
 import java.net.InetAddress;
 
 public class server {
     public static void main(String args[]) throws IOException, ClassNotFoundException {
         
-    	int rand_port, num;
     	String set_host = args[0];
         String serv_port = args[1];
 		String em_port = args[2];
@@ -26,73 +21,79 @@ public class server {
 		int em_port_int = Integer.parseInt(em_port);
 		
 		File out_file = new File(output_file);
+		File arrival_log = new File("arrival.log");
+		
+		
 		DatagramSocket udp_sock = new DatagramSocket(serv_port_int);
 		byte[] in_buf = new byte[1024];
-		DatagramPacket udp_in = new DatagramPacket(in_buf, in_buf.length);
-		udp_sock.receive(udp_in);
-		
-		ByteArrayInputStream b = new ByteArrayInputStream(udp_in.getData());
-		ObjectInputStream obj = new ObjectInputStream(b);
-		packet in_packet = (packet) obj.readObject();
 		
 		
 		// Create or set to overwrite file
 		out_file.createNewFile();
-		
-		int in_seq = in_packet.getSeqNum();
+		arrival_log.createNewFile();
 		
 		FileWriter file_write_output = new FileWriter(out_file.getAbsoluteFile());
-		
-		File arrival_log = new File("arrival.log");
-        arrival_log.createNewFile();
-        
 		FileWriter arrival_write = new FileWriter(arrival_log.getAbsoluteFile());
-	
-		arrival_write.write(in_seq);
-		arrival_write.close();
-       
 		
-		/*
-		byte[] test2 = new byte[4];
-		for(int i = 0; i < 4; i++){
-			test2[i] = in_buf[i];
-		}
-		byte file_end = in_buf[4];
-		*/
+		file_write_output.write("");
+		arrival_write.write("");
 		
-		// Write to file and set up input/output packets
-		String in_data = new String(in_packet.getData());
-		
-		packet ack_pack = new packet(0, in_seq, 0, null);
-		
-		file_write_output.write(in_data);
 		file_write_output.close();
+		arrival_write.close();
 		
-		/*
-		 * 
-		byte[] out_buf = in_data.getBytes(StandardCharsets.US_ASCII);
-		InetAddress ip_in = udp_in.getAddress();
-		DatagramPacket udp_out = new DatagramPacket(out_buf, 5, ip_in, udp_in.getPort());
-		udp_sock.send(udp_out);
+		while(true){
+			DatagramPacket udp_in = new DatagramPacket(in_buf, in_buf.length);
+			udp_sock.receive(udp_in);
+			
+			// Deserialize
+			ByteArrayInputStream b = new ByteArrayInputStream(udp_in.getData());
+			ObjectInputStream obj = new ObjectInputStream(b);
+			packet in_packet = (packet) obj.readObject();
+			
+			InetAddress ip_in = udp_in.getAddress();
+			
+			
+			FileWriter file_write = new FileWriter(out_file.getAbsoluteFile(), true);
+			FileWriter arrival_log_write = new FileWriter(arrival_log.getAbsoluteFile(), true);
+			
+			int in_seq = in_packet.getSeqNum();
+			arrival_log_write.write(in_seq);
+			arrival_log_write.close();
+			
+			String in_data = new String(in_packet.getData());
+			file_write.write(in_data);
+			file_write.close();
+			
+			if(in_packet.getType() == 3){
+				
+				packet ack_pack = new packet(2, in_seq, 0, null);
+				ByteArrayOutputStream out_byte = new ByteArrayOutputStream();
+				ObjectOutputStream obj_out = new ObjectOutputStream(out_byte);
+				obj_out.writeObject(ack_pack);
+				byte[] out_byte_array = out_byte.toByteArray();
+				
+			    // Serialize packet object to byte
+			    DatagramPacket out_pack = new DatagramPacket(out_byte_array, out_byte_array.length, ip_in, em_port_int);
+			    udp_sock.send(out_pack);
+			    
+				break;
+			}
+
+			packet ack_pack = new packet(0, in_seq, 0, null);
+			
+			ByteArrayOutputStream out_byte = new ByteArrayOutputStream();
+			ObjectOutputStream obj_out = new ObjectOutputStream(out_byte);
+			obj_out.writeObject(ack_pack);
+			byte[] out_byte_array = out_byte.toByteArray();
+			
+		    // Serialize packet object to byte
+		    DatagramPacket out_pack = new DatagramPacket(out_byte_array, out_byte_array.length, ip_in, em_port_int);
+		    udp_sock.send(out_pack);
+			
+			
+						
+		}
 		
-		// Repeat till end of file
-		
-		byte[] next_in_buf = new byte[1024];
-		DatagramPacket next_udp_in = new DatagramPacket(next_in_buf, 5);
-		udp_sock.receive(next_udp_in);
-			
-		String next_in_data = new String(next_udp_in.getData());
-		String next_out_data = next_in_data.toUpperCase();
-			
-		byte[] next_out_buf = next_out_data.getBytes(StandardCharsets.US_ASCII);
-		DatagramPacket next_udp_out = new DatagramPacket(next_out_buf, 5, ip_in, udp_in.getPort());
-		udp_sock.send(next_udp_out);
-			
-		FileWriter next_file_write = new FileWriter(out_file.getAbsoluteFile(), true);
-		next_file_write.write(next_out_data);
-		next_file_write.close();
-		*
-		*/	
 		udp_sock.close();
     }
 }
