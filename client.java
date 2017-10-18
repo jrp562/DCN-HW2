@@ -54,13 +54,22 @@ public class client {
             readtext += line + System.lineSeparator();
         }
     	br.close();
+
+    	String[] readArray;
+    	readArray = splitTo30Char(readtext);
     	
     	// Initialize socket
     	InetAddress ip_addr = InetAddress.getByName(set_host);
     	DatagramSocket udp_sock = new DatagramSocket();
-    	
-    	int seqnum_mod = seqnum % 8;
-	    packet new_pack = new packet(1, seqnum_mod, readtext.length(), readtext);
+
+	    for (seqnum; seqnum < readArray.length(); seqnum++) {
+			while (readArray[seqnum] > 30) {
+				packet new_pack = new packet(1, seqnum_mod, readArray[seqnum].length(), readArray[seqnum]);
+			}
+			else{
+				packet new_pack = new packet(3, seqnum_mod, readArray[seqnum].length(), readArray[seqnum]);
+			}
+		}
 	    
 	    ByteArrayOutputStream out_byte = new ByteArrayOutputStream();
 		ObjectOutputStream obj = new ObjectOutputStream(out_byte);
