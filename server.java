@@ -39,7 +39,18 @@ public class server {
 		// Create or set to overwrite file
 		out_file.createNewFile();
 		
+		int in_seq = in_packet.getSeqNum();
+		
 		FileWriter file_write_output = new FileWriter(out_file.getAbsoluteFile());
+		
+		File arrival_log = new File("arrival.log");
+        arrival_log.createNewFile();
+        
+		FileWriter arrival_write = new FileWriter(arrival_log.getAbsoluteFile());
+	
+		arrival_write.write(in_seq);
+		arrival_write.close();
+       
 		
 		/*
 		byte[] test2 = new byte[4];
@@ -51,6 +62,8 @@ public class server {
 		
 		// Write to file and set up input/output packets
 		String in_data = new String(in_packet.getData());
+		
+		packet ack_pack = new packet(0, in_seq, 0, null);
 		
 		file_write_output.write(in_data);
 		file_write_output.close();

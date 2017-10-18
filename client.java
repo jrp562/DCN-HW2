@@ -1,6 +1,8 @@
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.io.IOException;
@@ -24,7 +26,25 @@ public class client {
         
         int set_port_int = Integer.parseInt(set_port);
         int em_port_int = Integer.parseInt(em_port);
+        int seqnum = 0;
+        
+        int out_seq = 0;
+        int in_ack = 0;
+        
+        File seqnum_log = new File("seqnum.log");
+        File ack_log = new File("ack.log");
+        seqnum_log.createNewFile();
+        ack_log.createNewFile();
+        
+		FileWriter seqnum_write = new FileWriter(seqnum_log.getAbsoluteFile());
+		FileWriter ack_write = new FileWriter(ack_log.getAbsoluteFile());
 	
+		seqnum_write.write(out_seq);
+		seqnum_write.close();
+        
+		ack_write.write(in_ack);
+		ack_write.close();
+		
 		// Read from text file
 		BufferedReader br = new BufferedReader(new FileReader(filename));
     	String readtext = "";
@@ -38,8 +58,9 @@ public class client {
     	// Initialize socket
     	InetAddress ip_addr = InetAddress.getByName(set_host);
     	DatagramSocket udp_sock = new DatagramSocket();
-    		
-	    packet new_pack = new packet(3, 0, readtext.length(), readtext);
+    	
+    	int seqnum_mod = seqnum % 8;
+	    packet new_pack = new packet(1, seqnum_mod, readtext.length(), readtext);
 	    
 	    ByteArrayOutputStream out_byte = new ByteArrayOutputStream();
 		ObjectOutputStream obj = new ObjectOutputStream(out_byte);
