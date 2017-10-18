@@ -62,12 +62,12 @@ public class client {
     	InetAddress ip_addr = InetAddress.getByName(set_host);
     	DatagramSocket udp_sock = new DatagramSocket();
 
-	    for (seqnum; seqnum < readArray.length(); seqnum++) {
-			while (readArray[seqnum] > 30) {
-				packet new_pack = new packet(1, seqnum_mod, readArray[seqnum].length(), readArray[seqnum]);
+	    for (int i = 0; i < readArray.length(); i++) {
+			if (readArray[i] > 30) {
+				packet new_pack = new packet(1, i % 8, readArray[i].length(), readArray[i]);
 			}
 			else{
-				packet new_pack = new packet(3, seqnum_mod, readArray[seqnum].length(), readArray[seqnum]);
+				packet new_pack = new packet(3, i % 8, readArray[i].length(), readArray[i]);
 			}
 		}
 	    
@@ -98,5 +98,4 @@ public class client {
 		}
 		return parts.toArray(new String[0]);
 	}
-}
 }
