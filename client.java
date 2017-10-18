@@ -80,4 +80,14 @@ public class client {
 		*/
     	udp_sock.close();
     }
+	private static String[] splitTo30Char(String text) {
+		List<String> parts = new ArrayList<>();
+
+		int length = text.length();
+		for (int i = 0; i < length; i += 30) {
+			parts.add(text.substring(i, Math.min(length, i + 30)));
+		}
+		return parts.toArray(new String[0]);
+	}
+}
 }
